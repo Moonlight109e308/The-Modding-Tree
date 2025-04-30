@@ -1,7 +1,8 @@
 let modInfo = {
 	name: "The Magic Tree",
+	id: "hellomagicalmoonlight",
 	author: "moon_light",
-	pointsName: "magical energy",
+	pointsName: "energy",
 	modFiles: ["layers.js", "tree.js"],
 
 	discordName: "",
@@ -41,6 +42,8 @@ function getPointGen() {
 		return new Decimal(0)
 
 	let gain = new Decimal(1)
+	if (hasUpgrade('me', 11))
+		gain = gain.times(upgradeEffect('me', 11))
 	return gain
 }
 
