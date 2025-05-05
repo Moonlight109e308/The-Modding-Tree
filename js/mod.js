@@ -46,6 +46,10 @@ function getPointGen() {
 		gain = gain.times(upgradeEffect('me', 11))
 	if (hasUpgrade('me', 12))
 		gain = gain.times(upgradeEffect('me', 12))
+	if (hasUpgrade('me', 14))
+		gain = gain.pow(upgradeEffect('me', 14))
+	if (format(getBuyableAmount('me', 11)) > 0)
+		gain = gain.times(new Decimal(1.5).pow(getBuyableAmount('me', 11)))
 	return gain
 }
 
