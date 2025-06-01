@@ -41,7 +41,7 @@ function getPointGen() {
 	if(!canGenPoints())
 		return new Decimal(0)
 
-	let gain = new Decimal(1)
+	let gain = new Decimal(1000)
 	if (hasUpgrade('me', 11))
 		gain = gain.times(upgradeEffect('me', 11))
 	if (hasUpgrade('me', 12))
@@ -50,6 +50,8 @@ function getPointGen() {
 		gain = gain.pow(upgradeEffect('me', 14))
 	if (format(getBuyableAmount('me', 11)) > 0)
 		gain = gain.times(new Decimal(1.5).pow(getBuyableAmount('me', 11)))
+	if (hasUpgrade('me', 23))
+		gain = gain.times(upgradeEffect('me', 23))
 	return gain
 }
 

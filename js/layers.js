@@ -1,3 +1,4 @@
+var quotes = ["Hello.", "You may be confused who I am,", "but that's not important.", "What I want to tell you is,", "You are the one that has chosen by me.", "Please proceed,", "until you can find me again."];
 addLayer("me", {
     name: "Magical Energy", // This is optional, only used in a few places, If absent it just uses the layer id.
     symbol: "ME", // This appears on the layer's node. Default is the id with the first letter capitalized
@@ -5,6 +6,9 @@ addLayer("me", {
     startData() { return {
         unlocked: true,
 		points: new Decimal(0),
+        clickables:{
+            [11]: new Decimal(0),
+        },
     }},
     color: "#00F5FF",
     requires: new Decimal(10), // Can be a function that takes requirement increases into account
@@ -13,6 +17,13 @@ addLayer("me", {
     baseAmount() {return player.points}, // Get the current amount of baseResource
     type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     exponent: 0.5, // Prestige currency exponent
+    softcap(){
+        sc = new Decimal(500000).minus(player[this.layer].points)
+        return sc
+    },
+    softcapPower(){
+        return 0
+    },
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
         if (hasUpgrade("me", 21))
@@ -29,7 +40,7 @@ addLayer("me", {
     },
     row: 0, // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
-        {key: "p", description: "P: Reset for prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+        {key: "E", description: "E: Reset for Magical Energy", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
     layerShown(){return true},
     upgrades:{
@@ -58,7 +69,7 @@ addLayer("me", {
         12:{
             name: "Energy Aggregating",
             description: "<h3>Energy Aggregating</h3><br>Energy gain boost based on itself.",
-            cost: new Decimal(5),
+            cost: new Decimal(2),
             unlocked(){
                 return hasUpgrade("me", 11)
             },
@@ -75,7 +86,7 @@ addLayer("me", {
             unlocked(){
                 return hasUpgrade("me", 12)
             },
-            cost: new Decimal(30),
+            cost: new Decimal(15),
             effect(){
                 return new Decimal(1.2)
             },
@@ -86,7 +97,7 @@ addLayer("me", {
             unlocked(){
                 return hasUpgrade("me", 13)
             },
-            cost: new Decimal(100),
+            cost: new Decimal(80),
             effect(){
                 return new Decimal(1.15)
             },
@@ -128,13 +139,34 @@ addLayer("me", {
             },
         },
         23:{
-
+            name: "Powerful Source",
+            description: "<h3>Powerful Source</h3><br>Energy gain boost equal to the amount of source of magic.",
+            unlocked(){
+                return hasUpgrade('me', 22)
+            },
+            cost: new Decimal(200000),
+            effect(){
+                return getBuyableAmount('me', 11)
+            },
+            effectDisplay(){
+                return format(upgradeEffect(this.layer, this.id)) + "x"
+            },
         },
         24:{
-
+            name: "?",
+            description: "There might be someone that wanna say something to you.",
+            unlocked(){
+                return hasUpgrade('me', 23)
+            },
+            cost:new Decimal(0),
         },
         25:{
-
+            name: "Power Visualization",
+            description: "<h3>Power Visualization</h3><br>Unlocked the Magical Power tab.",
+            unlocked(){
+                return hasUpgrade('me', 24)
+            },
+            cost:new Decimal(500000),
         },
         },
     buyables:{
@@ -161,6 +193,109 @@ addLayer("me", {
             },
         },
     },
+    clickables: {
+        11:{
+            unlocked(){
+                return hasUpgrade('me', 24)&&getClickableState(this.layer, this.id).lt(7)
+            },
+            canClick(){
+                return hasUpgrade('me', 24)
+            },
+            onClick(){
+                setClickableState(this.layer, this.id, getClickableState(this.layer, this.id).add(1))
+            },
+            display(){
+                return quotes[getClickableState(this.layer, this.id).toNumber()]
+            },
+
+         },
+    },
+tabFormat: {
+    "energy": {
+        content:[
+            "main-display",
+            "prestige-button",
+            "clickables",
+            "buyables",
+            "upgrades",
+        ],
+    },
+    "power":{
+        
+        unlocked(){
+            return hasUpgrade("me", 25)
+        },
+        embedLayer: 'mw',
+    },
+    },
     }
 
+),
+addLayer("mw",
+    {
+        name: "Magical Power",
+        symbal: "MW",
+        position: 'me',
+        color: "#00F5FF",
+        startData(){
+            return {
+                unlocked: true,
+                points: new Decimal(0),
+
+            }
+        },
+        requires: new Decimal(500000),
+        resource: "Magical Power",
+        baseResource: "Magical Energy",
+        baseAmount(){
+            return player.me.points
+        },
+        type: "custom",
+        getResetGain(){
+            x = new Decimal(5).log(40)
+            return player.me.points.times(0.000002).exp(x).add(9).log(10).floor()
+        },
+        getNextAt(){
+            y = new Decimal(500000).div(tmp.mw.getResetGain).add(1)
+            z = new Decimal(5).log(40)
+            n = new Decimal(40).log(5)
+            return y.exp(z).exp(n).ceil()
+            
+        },
+        canReset(){
+            return tmp.mw.getResetGain.gt(0)
+        },
+        prestigeButtonText(){
+            return "+" + format(tmp.mw.getResetGain) + " Magical Powers<br>"
+        },
+        gainMult(){
+            mult = new Decimal(1)
+            return mult
+        },
+        gainExp(){
+            exp = new Decimal(1)
+            return exp
+        },
+
+        layerShown(){
+            return false
+        },
+        row: 0,
+        hotkeys: [
+        {key: "P", description: "P: Reset for Magical Power", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+        ],
+        upgrades: {
+            11:{
+                name: "When I Have Been Exists",
+                description:"<h3>When I Have Been Exists</h3><br>Energy gain boost based on time you have played.",
+                unlocked(){
+                    return player[this.layer].points.gt(0)
+                },
+                cost: new Decimal(1),
+
+            }
+        },
+    
+    }
 )
+
