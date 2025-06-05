@@ -223,7 +223,10 @@ function doReset(layer, force=false) {
 		rowReset(r, layer)
 	}
 
+	player[layer].getting = tmp[layer].getResetGain
 	player[layer].resetTime = 0
+
+	
 
 	updateTemp()
 	updateTemp()

@@ -19,7 +19,10 @@ let VERSION = {
 
 let changelog = `<h1>Changelog:</h1><br>
 	<h3>v0.0</h3><br>
-		- The layer "magical energy" released.`
+		- The layer "magical energy" released.<br>
+	<h3>v0.1</h3><br>
+		- Added new tab "power" and some new things.
+		`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
 
@@ -41,7 +44,7 @@ function getPointGen() {
 	if(!canGenPoints())
 		return new Decimal(0)
 
-	let gain = new Decimal(1000)
+	let gain = new Decimal(1)
 	if (hasUpgrade('me', 11))
 		gain = gain.times(upgradeEffect('me', 11))
 	if (hasUpgrade('me', 12))
@@ -52,11 +55,17 @@ function getPointGen() {
 		gain = gain.times(new Decimal(1.5).pow(getBuyableAmount('me', 11)))
 	if (hasUpgrade('me', 23))
 		gain = gain.times(upgradeEffect('me', 23))
+	if (hasUpgrade('mw', 11))
+		gain = gain.times(upgradeEffect('mw', 11))
+	if (getBuyableAmount('mw', 23).gt(0))
+		gain = gain.times(buyableEffect('mw', 23))
 	return gain
 }
 
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
-function addedPlayerData() { return {
+function addedPlayerData() { 
+	return {
+	
 }}
 
 // Display extra things at the top of the page
@@ -65,7 +74,7 @@ var displayThings = [
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.points.gte(new Decimal("e280000000"))
+	return hasUpgrade('mw', 23)
 }
 
 
